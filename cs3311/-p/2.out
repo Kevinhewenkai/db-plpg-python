@@ -1,0 +1,16 @@
+       brewer        | nbeers 
+---------------------+--------
+ Brew Dog            |      2
+ Bridge Road Brewers |      1
+ Caledonian          |      1
+ Carlton             |      5
+ Cascade             |      1
+ Cooper's            |      2
+ George IV Inn       |      1
+ James Squire        |      4
+ Lord Nelson         |      2
+ Murray's            |      1
+ Sierra Nevada       |      2
+ Toohey's            |      4
+(12 rows)
+

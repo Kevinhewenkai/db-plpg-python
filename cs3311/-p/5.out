@@ -1,0 +1,7 @@
+      beer       | AvgPrice 
+-----------------+----------
+ New             |     2.59
+ Old             |     2.68
+ Victoria Bitter |     2.40
+(3 rows)
+

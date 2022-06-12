@@ -1,0 +1,180 @@
+#!/usr/bin/python3
+
+import sqlite3, sys
+
+if len(sys.argv) != 3:
+    print("Usage:",sys.argv[0]," actor name, actor name")
+    sys.exit(1)
+
+try:
+    con = sqlite3.connect('a2.db')
+except Exception as e:
+    print("Unable to connect with database")
+
+cur = con.cursor()
+
+query = '''
+select m.title, m.year
+from movie m
+    join acting ai on (ai.movie_id = m.id)
+    join actor a on (ai.actor_id = a.id)
+where a.name like "{}"
+'''
+
+query2 = '''
+select a.name
+from actor a
+    join acting ai on (ai.actor_id = a.id)
+    join movie m on (ai.movie_id = m.id)
+where m.title like "{}"
+'''
+
+# query3 = '''
+# select m.title, m.year
+# from movie m
+#     join acting ai on (ai.movie_id = m.id)
+#     join actor a on (ai.actor_id = a.id)
+# where a.name like "{}"
+# INTERSECT
+# select m.title, m.year
+# from movie m
+#     join acting ai on (ai.movie_id = m.id)
+#     join actor a on (ai.actor_id = a.id)
+# where a.name like "{}"
+# '''
+
+query4 = '''
+select a.name from actor a where a.name like "{}"
+'''
+
+# def printResult(start,dest,pred, string, exist_string):
+#     print("start: " + start + "dest" + dest)
+#     if start == dest:
+#         printing = "; ".join(string)
+#         if printing not in exist_string:
+#             exist_string.append(printing)
+#             print(printing)
+#         return
+    
+#     else:
+#         for pred_entry in pred:
+#             if pred_entry[1] == dest:
+#                 cur.execute(query3.format(pred_entry[0], pred_entry[1]))
+#                 for t in cur.fetchall():
+#                     a = t[0]
+#                     b = t[1]
+#                     cur.execute(query4.format(pred_entry[0]))
+#                     for t in cur.fetchall():
+#                         c = t[0]
+#                     cur.execute(query4.format(pred_entry[1]))
+#                     for t in cur.fetchall():
+#                         d = t[0]
+#                     substring = c + " was in " + a +"(" + str(b) + ")" + " with " + d
+#                     string.insert(0, substring)
+#                     printResult(start, pred_entry[0], pred, string, exist_string)
+#                     string.clear()
+
+actor = []
+string_list = []
+
+#pred = []
+count = 1
+# pred = {}
+
+start = sys.argv[1].lower()
+curr = sys.argv[1].lower()
+dest = sys.argv[2].lower()
+
+is_dest = 0
+dest_num = 0
+
+actor.append((curr, 0, ''))
+
+while len(actor) > 0:
+    curr, curr_num, string = actor[0]
+    actor.pop(0)
+    if (is_dest == 0 and curr_num < 6)or curr_num == dest_num:
+        cur.execute(query.format(curr))
+        for t in cur.fetchall():
+            m = t[0]
+            myear = t[1]
+            cur.execute(query2.format(m))
+            for t in cur.fetchall():
+                next = t[0]
+                substring = ''
+                cur.execute(query4.format(curr))
+                for t in cur.fetchall():
+                    c = t[0]
+                cur.execute(query4.format(next))
+                for t in cur.fetchall():
+                    n = t[0]
+                if string == "":
+                    substring = c + " was in " + m + " (" + str(myear) + ")" + " with " + n
+                else:
+                    substring = "; " + c + " was in " + m + " (" + str(myear) + ")" + " with " + n
+                if (next.lower() == dest and dest_num ==  0):
+                    is_dest = 1
+                    dest_num = curr_num
+                if (next.lower() == dest and dest_num == curr_num):
+                     string_list.append(string + substring)
+                if is_dest != 1:
+                    actor.append((next, curr_num + 1, string + substring))
+
+string_list = sorted(string_list)
+for strings in string_list:
+    print(str(count) + '. ' + strings)
+    count += 1
+                    #pred.append((curr.lower(), next.lower()))
+#remove the duplicate
+# pred = [t for t in (set(tuple(i) for i in pred))]
+
+# if (is_dest == 1):
+#     queue = []
+#     queue.append((dest, []))
+#     while len(queue) > 0:
+#         x, y = queue[0]
+#         # print("y")
+#         # print(y)
+#         if (x == start):
+#              print("; ".join(y))
+#              queue.pop(0)
+#              continue
+#         queue.pop(0)
+#         for pred_entry in pred:
+#             if pred_entry[1] == x:
+#                 #print("##########" + pred_entry[0] + pred_entry[1])
+#                 cur.execute(query3.format(pred_entry[0], pred_entry[1]))
+#                 for t in cur.fetchall():
+#                     a = t[0]
+#                     b = t[1]
+#                     #print("######" + str(a) + str(b))
+#                     cur.execute(query4.format(pred_entry[0]))
+#                     for t in cur.fetchall():
+#                         c = t[0]
+#                     cur.execute(query4.format(pred_entry[1]))
+#                     for t in cur.fetchall():
+#                         d = t[0]
+#                     #print("#############" + str(a) + str(b) + str(c) + str(d))
+#                     substring = c + " was in " + a +"(" + str(b) + ")" + " with " + d
+#                     #print("###############" + str(substring))
+#                     empty = []
+#                     empty.append(substring)
+#                     if len(y) > 0:
+#                         empty.append(y[0])
+#                     queue.append((pred_entry[0], empty))
+                    #print(queue)
+                
+
+#trace back
+# i = 1
+# j = dest
+# tem = {}
+# tem[0] = start
+# if (is_dest == 1):
+#     while j != start:
+#         tem[i] = j
+#         i += 1
+#         j = pred[j]
+# if i <= 6:
+#     printResult(0, [], i - 1, tem)
+## name -> movie ->actor : actor & actor

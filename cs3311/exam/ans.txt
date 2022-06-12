@@ -1,0 +1,58 @@
+-- COMP3311 21T1 Exam Answer Template for Written Questions
+--
+-- Modify the dummy placeholder REPLACE ME for each of
+-- the Questions below (Q8 - Q11)
+
+
+-- Q8
+-- Functional dependencies
+-- (a)
+BC
+
+-- (b)
+A
+
+-- (c)
+CDE; ACE
+
+
+-- Q9
+-- Normalization
+-- (a)
+It is not dependency preserved
+since the candidate key is A
+consider ABCDEFG
+for A -> BCD (good, since LHS is the key)
+for C->DE (not good, so we decompose)
+CDE,  ABCFG
+BUT now NONE of the relation has E and F at the same time 
+thus it not dependency preserved
+-- (b)
+AC, DEF, BG, AD
+
+-- (c)
+ABCDE, ABCFG
+
+
+-- Q10
+-- Serializability
+-- (a)
+it is conflict serializable.
+T1->T2
+since we don't have a cycle we say it is conflict serializable.
+
+-- (b)
+it is not conflict serializable.
+we have T1->T2, T1->T4->T1, T3->T2, T4->T3
+since we have a cycle we say it is not conflict serializable.
+-- (c)
+yes
+
+-- (d)
+no
+
+
+-- Q11
+-- Relational algebra
+--
+E

@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+
+import sqlite3, sys
+
+if len(sys.argv) < 2 :
+    print("Usage:",sys.argv[0]," SUBSTRING-1 SUBSTRING-2 SUBSTRING-3 ...")
+    sys.exit(1)
+
+try:
+    con = sqlite3.connect('a2.db')
+except Exception as e:
+    print("Unable to connect with database")
+
+cur = con.cursor()
+
+'''
+movie : id|title|year|content_rating|duration|lang|country|gross|budget|director_id
+rating : movie_id|num_critic_for_reviews|num_user_for_reviews|num_voted_users|movie_facebook_likes|cast_total_facebook_likes|imdb_score
+director : id          name        facebook_likes
+actor : id          name               facebook_likes
+acting : movie_id    actor_id
+genre : movie_id    genre 
+keyword : movie_id    keyword 
+'''
+
+genre_list = []
+
+query = ''
+
+insert_query = '''
+select m.title, m.year, m.content_rating, r.imdb_score
+from movie m 
+    join rating r on (m.id = r.movie_id)
+    join director d on (d.id = m.director_id)
+    join acting ai on (m.id = ai.movie_id)
+    join actor a on (ai.actor_id = a.id)
+where lower(d.name) like "%{}%" or lower(a.name) like "%{}%" 
+UNION
+select m.title, m.year, m.content_rating, r.imdb_score
+from movie m 
+    join rating r on (m.id = r.movie_id)
+where lower(m.title) like "%{}%"
+order by m.year desc, r.imdb_score desc, m.title asc
+'''
+
+query2 = '''
+select g.genre
+from genre g 
+    join movie m on (m.id = g.movie_id)
+    join rating r on (m.id = r.movie_id)
+where m.title = "{}"
+order by g.genre asc
+'''
+
+order = '''
+order by m.year desc, r.imdb_score desc, m.title asc
+'''
+
+exist_list = []
+
+exist = []
+tmp = []
+for i in range(1, len(sys.argv)):
+    input_string = sys.argv[i].lower()
+    cur.execute(insert_query.format(input_string, input_string, input_string))
+    if exist == []:
+        for t in cur.fetchall():
+            a,b,c,d = t
+            x = (a,b,c,d)
+            exist.append(x)
+    else:
+        for t in cur.fetchall():
+            a,b,c,d = t
+            x = (a,b,c,d)
+            tmp.append(x)
+        exist = [x for x in exist if x in tmp]
+        tmp.clear()
+
+i = 1
+for entry in exist:
+    a,b,c,d = entry
+    d = ('%.1f'%float(d))
+    if {a,b,c,d} in exist_list:
+        continue
+    exist_list.append({a,b,c,d})
+    cur.execute(query2.format(a))
+    for genre_entry in cur.fetchall():
+        genre_list.append(genre_entry[0])
+    genre_list = list(set(genre_list))
+    genre_list = sorted(genre_list)
+    if b == None and c == None:
+        print('{}. {} ({}) {}'.format(i, a, d,'[' + ','.join(genre_list) + ']'))
+    elif b == None and c != None:
+        print('{}. {} ({}, {}) {}'.format(i, a,c,d,'[' + ','.join(genre_list) + ']'))
+    elif b != None and c == None:
+        print('{}. {} ({}, {}) {}'.format(i, a,b,d,'[' + ','.join(genre_list) + ']'))
+    else:
+        print('{}. {} ({}, {}, {}) {}'.format(i, a,b,c,d,'[' + ','.join(genre_list) + ']'))
+    i += 1
+    genre_list.clear()
+
+con.close()
